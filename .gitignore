@@ -27,3 +27,5 @@ infra/lambda.zip
 
 # Scratch
 repo_contents.txt
+agent_audit.log
+agent_audit.log

@@ -1,0 +1,3 @@
+# EC2 unreachable
+1. Check instance status in console
+2. ...
