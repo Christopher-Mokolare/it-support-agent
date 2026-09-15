@@ -19,11 +19,13 @@ slack_socket = SocketModeClient(
 
 
 def handle_message(client: SocketModeClient, req: SocketModeRequest):
+    print("REQ TYPE:", req.type)
     if req.type != "events_api":
         return
     client.send_socket_mode_response(SocketModeResponse(envelope_id=req.envelope_id))
 
     event = req.payload.get("event", {})
+    print("EVENT TYPE:", event.get("type"), "BOT ID:", event.get("bot_id"))
     if event.get("type") != "app_mention" or event.get("bot_id"):
         return
 

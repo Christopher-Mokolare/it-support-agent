@@ -11,7 +11,10 @@ resource "aws_dynamodb_table" "tickets" {
   name         = "it-support-tickets"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "ticketId"
-  attribute { name = "ticketId" type = "S" }
+  attribute {
+    name = "ticketId"
+    type = "S"
+  }
 }
 
 # --- S3: runbooks ---

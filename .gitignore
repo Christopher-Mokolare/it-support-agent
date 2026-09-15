@@ -1,0 +1,29 @@
+# Python
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+
+# Build artifacts
+*.zip
+infra/lambda.zip
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Scratch
+repo_contents.txt

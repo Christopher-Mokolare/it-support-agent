@@ -1,10 +1,11 @@
 import json
+import os
 from tools.ticket_tool import create_ticket, update_ticket, get_ticket
 from tools.infra_tool import get_instance_status, reboot_instance, list_iam_user_access_keys, rotate_iam_access_key
 from tools.logs_tool import query_logs, get_recent_errors
-from tools.runbook_tool import search_runbooks
+from tools.code_tool import scan_repo, apply_fix, read_file
+from tools.git_tool import git_status, git_diff, git_commit_and_push
 
-KNOWLEDGE_BASE_ID = "YOUR_KB_ID"
 
 TOOL_MAP = {
     "create_ticket": lambda p: create_ticket(**p),
@@ -16,7 +17,14 @@ TOOL_MAP = {
     "rotate_iam_access_key": lambda p: rotate_iam_access_key(**p),
     "query_logs": lambda p: query_logs(**p),
     "get_recent_errors": lambda p: get_recent_errors(**p),
-    "search_runbooks": lambda p: search_runbooks(knowledge_base_id=KNOWLEDGE_BASE_ID, **p),
+    "search_runbooks": lambda p: {"runbooks": [], "note": "Knowledge base not configured"},
+    # Code & Git tools
+    "scan_repo": lambda p: scan_repo(**p),
+    "apply_fix": lambda p: apply_fix(**p),
+    "read_file": lambda p: read_file(**p),
+    "git_status": lambda p: git_status(**p),
+    "git_diff": lambda p: git_diff(**p),
+    "git_commit_and_push": lambda p: git_commit_and_push(**p),
 }
 
 

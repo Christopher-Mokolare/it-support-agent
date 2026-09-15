@@ -16,15 +16,16 @@ def create_agent(role_arn: str, knowledge_base_id: str) -> dict:
     )
     agent_id = response["agent"]["agentId"]
 
-    # attach knowledge base
-    bedrock.associate_agent_knowledge_base(
-        agentId=agent_id,
-        agentVersion="DRAFT",
-        knowledgeBaseId=knowledge_base_id,
-        description="Internal runbooks and IT documentation",
-        knowledgeBaseState="ENABLED",
-    )
+    if knowledge_base_id:
+        bedrock.associate_agent_knowledge_base(
+            agentId=agent_id,
+            agentVersion="DRAFT",
+            knowledgeBaseId=knowledge_base_id,
+            description="Internal runbooks and IT documentation",
+            knowledgeBaseState="ENABLED",
+        )
 
+    import time; time.sleep(5)
     bedrock.prepare_agent(agentId=agent_id)
     return {"agentId": agent_id}
 
@@ -40,6 +41,8 @@ def invoke_agent(agent_id: str, alias_id: str, message: str, session_id: str = N
 
     output = ""
     for event in response["completion"]:
+        print("EVENT:", list(event.keys()))
         if "chunk" in event:
             output += event["chunk"]["bytes"].decode("utf-8")
-    return output
+    print("AGENT OUTPUT:", repr(output))
+    return output or "(no response from agent)"
