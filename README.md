@@ -1,85 +1,34 @@
 # IT Support Agent
 
-An AI agent that **owns the IT support lane end-to-end** — triage, diagnose, fix, verify, document.
+Multi-project AI IT/DevOps support engineer for diagnosis, controlled repository fixes and verification.
 
-## Architecture
+## Multi-project by design
+Projects are configuration, not separate agents. Add projects and repositories in `config/projects.yaml`; paths come from environment variables and are never secrets. The same agent can support DFY, SecureX, TaxiConnect and future client/internal projects.
 
-```
-Slack mention
-     ↓
-main.py (Slack Socket Mode)
-     ↓
-Amazon Bedrock Agent (Claude 3.5 Sonnet)
-     ↓ (tool calls)
-Lambda action_handler.py
-     ↓
-┌─────────────────────────────────────┐
-│  ticket_tool  │  infra_tool         │
-│  logs_tool    │  runbook_tool (RAG) │
-└─────────────────────────────────────┘
-     ↓
-DynamoDB (tickets) │ CloudWatch │ EC2/IAM │ S3+OpenSearch (runbooks)
-```
-
-## Setup
-
-### 1. Deploy infrastructure
+## Run
 ```bash
-cd infra
-terraform init
-terraform apply
-```
-
-### 2. Upload runbooks to S3
-```bash
-aws s3 cp ./runbooks/ s3://<your-bucket>/ --recursive
-```
-
-### 3. Create Bedrock Knowledge Base
-```python
-from memory.knowledge_base import create_knowledge_base, sync_knowledge_base
-kb = create_knowledge_base(role_arn="...", bucket_name="...", collection_arn="...")
-sync_knowledge_base(kb["knowledgeBaseId"], data_source_id="...")
-```
-
-### 4. Create Bedrock Agent
-```python
-from agent.bedrock_agent import create_agent
-agent = create_agent(role_arn="<bedrock-role-arn>", knowledge_base_id="<kb-id>")
-```
-
-### 5. Configure environment
-```bash
-cp .env.example .env
-# fill in BEDROCK_AGENT_ID, BEDROCK_AGENT_ALIAS_ID, SLACK tokens
-```
-
-### 6. Run
-```bash
+python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python main.py
+cp .env.example .env
+python -m cli "List the configured projects"
+python -m cli "Investigate the DFY staging login failure. Inspect evidence before changing anything."
 ```
 
-## Usage (Slack)
+## Providers
+The runtime uses an OpenAI-compatible API abstraction: Groq, OpenAI and Ollama are supported through `LLM_PROVIDER`, `LLM_MODEL`, `LLM_API_KEY` and optional `LLM_BASE_URL`. No Bedrock or Slack credential is required for the core agent.
 
-```
-@it-support my EC2 instance i-0abc123 is unreachable
-@it-support rotate access keys for user john.doe
-@it-support show me errors in /aws/lambda/payments-service from the last 2 hours
-@it-support create a ticket: CI pipeline failing on main branch, severity high
-```
+## Safety
+- Explicit project/repository context.
+- Repository-root path confinement prevents traversal.
+- Exact unique text replacements for fixes.
+- Commands execute with argv and `shell=False`.
+- No arbitrary shell tool is exposed to the model.
+- No credential rotation, deletion, reboot, deployment or git push is exposed by default.
+- Audit events are written to JSONL without storing provider keys.
+- Production mutation capabilities should be added as separately permissioned tools with human approval.
 
-## What the agent owns
+## Verification
+CI runs Python compilation and pytest. Repository verification can run Python, .NET or Node build checks when the configured project contains the relevant manifest.
 
-| Capability | Tool |
-|---|---|
-| Ticket lifecycle | DynamoDB via ticket_tool |
-| EC2 status & reboot | EC2 API via infra_tool |
-| IAM key rotation | IAM API via infra_tool |
-| Log analysis | CloudWatch Insights via logs_tool |
-| Runbook lookup | Bedrock Knowledge Base via runbook_tool |
-
-## Guardrails
-- Production changes → agent summarizes plan, waits for human ✅ approval in Slack
-- All actions logged to ticket history
-- Lambda IAM role follows least privilege
+## Production readiness
+This repository is not declared operationally production-ready merely because CI passes. Before production deployment, configure a real secret manager, durable centralized audit storage, authentication/authorization for any network interface, monitoring/alerting, backups, rate limits, provider failover, and a tested approval workflow. The core multi-project agent is designed so those controls can be added without tying the system to one project.

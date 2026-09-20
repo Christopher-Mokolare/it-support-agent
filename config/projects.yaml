@@ -1,0 +1,30 @@
+# Project registry. Use environment variables for paths; never commit secrets.
+projects:
+  DFY:
+    description: DoForYou platform
+    repos:
+      backend: ${DFY_BE_PATH:-~/Documents/GitHub/DFY-BE}
+      frontend: ${DFY_FE_PATH:-~/Documents/GitHub/DFY-FE}
+    environments:
+      staging:
+        platform: render
+      production:
+        platform: render
+    production: true
+  SecureX:
+    description: Secure peer-to-peer exchange platform
+    repos:
+      backend: ${SECUREX_BE_PATH:-~/Documents/GitHub/secureexchange}
+      frontend: ${SECUREX_FE_PATH:-~/Documents/GitHub/secureexchange-fe}
+    environments:
+      production:
+        platform: aws
+    production: true
+  TaxiConnect:
+    description: Taxi dispatch and passenger coordination platform
+    repos:
+      app: ${TAXICONNECT_PATH:-~/Documents/GitHub/taxiconnect}
+    environments:
+      production:
+        platform: firebase
+    production: true
